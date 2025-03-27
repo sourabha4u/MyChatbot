@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 
 # Show title and description.
-st.title("🛒 Shopping Assistant Chatbot")
+st.title("🛒 Shopping Assistant Chatbot 3.0")
 st.write(
     "This chatbot can assist you with **order status** and **product information**. "
     "Please provide your OpenAI API key to get started."
