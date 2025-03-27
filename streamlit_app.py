@@ -29,13 +29,28 @@ else:
     # Create a chat input field.
     if prompt := st.chat_input("Ask about order status or product information..."):
 
-        # Validate the user's input to ensure it's about order status or product information.
-        if "order status" in prompt.lower() or "product information" in prompt.lower():
-            # Store and display the current prompt.
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            with st.chat_message("user"):
-                st.markdown(prompt)
+        # Store and display the current prompt.
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
+        # Use OpenAI to classify the intent of the user's query.
+        intent_response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are an intent classifier. Classify the user's query into one of the following categories: 'order status', 'product information', or 'other'."},
+                {"role": "user", "content": prompt},
+            ],
+        )
+
+        # Extract the intent from the response.
+        try:
+            intent = intent_response.choices[0].message.content.strip().lower()
+        except (KeyError, IndexError, AttributeError):
+            intent = "other"
+
+        # Handle the intent based on the classification.
+        if intent == "order status" or intent == "product information":
             # Generate a response using the OpenAI API.
             stream = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -51,9 +66,10 @@ else:
                 response = st.write_stream(stream)
             st.session_state.messages.append({"role": "assistant", "content": response})
         else:
-            # Inform the user that their query is not supported.
+            # Handle unsupported queries.
             with st.chat_message("assistant"):
                 st.markdown(
                     "I'm sorry, I can only assist with **order status** or **product information**. "
                     "Please ask about one of these topics."
                 )
+            st.session_state.messages.append({"role": "assistant", "content": "I'm sorry, I can only assist with **order status** or **product information**. Please ask about one of these topics."})
