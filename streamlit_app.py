@@ -2,7 +2,7 @@ import streamlit as st
 from openai import OpenAI
 
 # Show title and description.
-st.title("🛒 Shopping Assistant 4.10 Chatbot")
+st.title("🛒 Shopping Assistant 4.50 Chatbot")
 st.write(
     "This chatbot can assist you with **order status** and **product information**. "
     "It can also greet you! Please provide your OpenAI API key to get started."
@@ -10,6 +10,7 @@ st.write(
 
 # Ask user for their OpenAI API key via `st.text_input`.
 openai_api_key = st.text_input("OpenAI API Key", type="password")
+
 if not openai_api_key:
     st.info("Please add your OpenAI API key to continue.", icon="🗝️")
 else:
@@ -38,7 +39,7 @@ else:
         intent_response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are an intent classifier. Classify the user's query into one of the following categories: 'greeting', 'order status', 'product information', or 'other'."},
+                {"role": "system", "content": "You are an intent classifier. Classify the user's query into one of the following categories: 'greeting', 'farewell', 'order status', 'product information', or 'other'."},
                 {"role": "user", "content": prompt},
             ],
         )
@@ -55,6 +56,12 @@ else:
             with st.chat_message("assistant"):
                 st.markdown("Hello! How can I assist you today? You can ask about **order status** or **product information**.")
             st.session_state.messages.append({"role": "assistant", "content": "Hello! How can I assist you today? You can ask about **order status** or **product information**."})
+        elif intent == "farewell":
+            # Respond to farewells.
+            farewell_message = "It was nice talking to you! Have a great day!"
+            with st.chat_message("assistant"):
+                st.markdown(farewell_message)
+            st.session_state.messages.append({"role": "assistant", "content": farewell_message})
         elif intent == "order status" or intent == "product information":
             # Generate a response using the OpenAI API.
             stream = client.chat.completions.create(
